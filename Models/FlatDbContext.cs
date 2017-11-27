@@ -10,7 +10,13 @@ namespace FlatDatabase.Models
 
         }
 
-        public DbSet<FlatDatabase.Models.Item> Item { get; set; }
+        public FlatDbContext()
+        : base()
+        {
+
+        }
+
+        public DbSet<ItemModel> Item { get; set; }
 
     }
 }

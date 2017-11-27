@@ -24,12 +24,13 @@ namespace FlatDatabase
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddDbContext<FlatDbContext> (options => options.UseSqlite ("Data Source=flat.db"));
+            services.AddDbContext<FlatDbContext> (options => options.UseSqlite("Data Source=flat.db"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            System.Console.WriteLine("Configure");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

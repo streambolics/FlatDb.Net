@@ -11,9 +11,10 @@ using System;
 namespace flatdatabase.Migrations
 {
     [DbContext(typeof(FlatDbContext))]
-    partial class FlatDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171124161607_Stepping1")]
+    partial class Stepping1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
