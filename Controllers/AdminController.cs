@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using FlatDatabase.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FlatDatabase.Controllers
 {
@@ -11,30 +12,76 @@ namespace FlatDatabase.Controllers
 
         public AdminController(FlatDbContext aContext) => _context = aContext;
 
-        public string Grant (long DbId, string Token)
+        public async Task<bool> CheckDatabaseExistsAsync(long database)
         {
-            // TODO : This here is a huge security issue as anyone can grant 
-            //        access to any database.
-            //        We need a secondary check with an administrative token.
+            ItemModel itm = await _context.Item.SingleOrDefaultAsync(i => i.Database == database);
+            return itm != null;
+        }
 
-            ItemModel n = new ItemModel ();
+        public string Shutdown(string admintoken)
+        {
+            if (!Program.CheckAdminSecret(admintoken))
+            {
+                return "Sorry...";
+            }
+            
+            Program.Shutdown();
+            return "Bye...";
+        }
+
+        public async Task<string> Grant(long database, string token, string writable, string admintoken)
+        {
+            if (!Program.CheckAdminSecret(admintoken))
+            {
+                return "Sorry...";
+            }
+
+            ItemModel n = new ItemModel();
 
             // TODO : If token is empty, generate a random one.
 
-            n.ItemId = Database.TokenToId(Token);
+            if (String.IsNullOrEmpty(token))
+            {
+                byte[] b = new byte[15];
+                Random r = new Random();
+                r.NextBytes(b);
+                token = System.Convert.ToBase64String(b);
+            }
 
-            // TODO : Check whether we want a read-only or write token
+            n.ItemId = Database.TokenToId(token);
 
-            n.StatusId = Database.TokenWriteStatusId;
+            if (String.IsNullOrEmpty(writable))
+            {
+                n.StatusId = Database.TokenReadStatusId;
+            }
+            else
+            {
+                n.StatusId = Database.TokenWriteStatusId;
+            }
+
             n.Database = Database.TokenDatabase;
 
-            // TODO : If DbId is zero, generate a new DbId. Check that it does
-            //        not correspond to an existing database.
-            
-            n.MasterId = DbId.ToString();
+            if (database < 5)
+            {
+                do
+                {
+                    byte[] b = new byte[7];
+                    Random r = new Random();
+                    r.NextBytes(b);
+                    database = 1;
+                    foreach (byte bb in b)
+                    {
+                        database = (database << 8) + bb;
+                    }
+                }
+                while (await CheckDatabaseExistsAsync(database));
+            }
+
+            n.MasterId = database.ToString();
             _context.Add(n);
-            _context.SaveChanges();
-            return Token;
+            await _context.SaveChangesAsync();
+            return token;
+
         }
     }
 }

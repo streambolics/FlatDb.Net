@@ -33,7 +33,6 @@ namespace FlatDatabase
             using (var encryptor = SHA256.Create())
             {
                 var hash = encryptor.ComputeHash(Encoding.ASCII.GetBytes(Token));
-                Console.WriteLine("TokenToID " + System.Convert.ToBase64String(hash));
                 return System.Convert.ToBase64String(hash);
             }
         }
